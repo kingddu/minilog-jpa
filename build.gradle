@@ -1,6 +1,7 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.0'
+	//id 'org.springframework.boot' version '3.5.0'
+	id 'org.springframework.boot' version '3.5.9'
 	id 'io.spring.dependency-management' version '1.1.7'
 
 	// 다양한 언어를 위한 코드 포매터와 관련 태스크 제공(예 spotlessApply)
@@ -24,8 +25,12 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
 	//Swagger UI를 사용하기 위한 의존성 추가
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+	//implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+	//버전업...
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'
 
 	//Spring Data JPA 스타터 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

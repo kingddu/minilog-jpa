@@ -2,6 +2,7 @@ package com.asdf.minilog.entity;
 
 
 import jakarta.persistence.*;
+import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Follow {
 
