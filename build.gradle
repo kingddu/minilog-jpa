@@ -38,6 +38,12 @@ dependencies {
 	//MySql jdbc 드라이버 의존성 추가
 	implementation 'mysql:mysql-connector-java:8.0.32'
 
+	//Spring Security와 jwt 의존성을 추가
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// JWT 라이브러리를 추가
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+
 
 	//Lombok 라이브러리 컴파일 시에만 사용하도록 설정
 	//getter, setter 등을 자동으로 생성해줌
@@ -49,6 +55,9 @@ dependencies {
 	//JUnit5를 이용한 테스트를 위한 의존성을 추가
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+	//Spring Security 테스트를 위한 의존성을 추가
+	testImplementation 'org.springframework.security:spring-security-test'
+
 	//Import TestContainers for JUnit 5
 	//임시 MySql 컨테이너를 생성하여 유닛테스트를 수행하기 위한 의존성 추가
 	testImplementation 'org.testcontainers:junit-jupiter:1.20.1'
@@ -57,6 +66,11 @@ dependencies {
 
 	//JUnit5 테스트를 실행하기 위한 런타임 의존성을 추가
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//JWT 라이브러리의 구현체를 추가
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
 
 }
 
@@ -73,6 +87,10 @@ tasks.named('test') {
 		jvmArgs '-XX:+EnableDynamicAgentLoading'
 	}
 
+}
+
+tasks.withType(JavaExec).configureEach {
+	jvmArgs "-Dfile.encoding=UTF-8"
 }
 
 // Spotless 플러그인을 사용하여 코드 양식을 자동으로 맞춤

@@ -3,18 +3,20 @@ package com.asdf.minilog.controller;
 
 import com.asdf.minilog.dto.FollowRequestDto;
 import com.asdf.minilog.dto.FollowResponseDto;
+import com.asdf.minilog.security.MinilogUserDetails;
 import com.asdf.minilog.service.FollowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/follow")
+@RequestMapping("/api/v2/follow")
 public class FollowController {
 
     private final FollowService followService;
@@ -30,9 +32,11 @@ public class FollowController {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "404", description = "사용자 없음")
     })
-    public ResponseEntity<FollowResponseDto> follow(@RequestBody FollowRequestDto
+    public ResponseEntity<FollowResponseDto> follow(
+            @AuthenticationPrincipal MinilogUserDetails userDetails,
+            @RequestBody FollowRequestDto
             request) {
-            Long followerId = request.getFollowerId();
+            Long followerId = userDetails.getId();
             Long followeeId = request.getFolloweeId();
 
             FollowResponseDto follow = followService.follow(followerId, followeeId);
@@ -46,8 +50,9 @@ public class FollowController {
             @ApiResponse(responseCode = "404", description = "사용자 없음")
     })
     public ResponseEntity<Void> unfollow(
+            @AuthenticationPrincipal MinilogUserDetails userDetails,
             @PathVariable Long followerId, @PathVariable Long followeeId) {
-            followService.unfollow(followerId, followeeId);
+            followService.unfollow(userDetails.getId(), followeeId);
             return ResponseEntity.ok().build();
     }
 

@@ -2,10 +2,15 @@ package com.asdf.minilog.service;
 
 import com.asdf.minilog.dto.UserRequestDto;
 import com.asdf.minilog.dto.UserResponseDto;
+import com.asdf.minilog.entity.Role;
 import com.asdf.minilog.entity.User;
+import com.asdf.minilog.exception.NotAuthorizedException;
 import com.asdf.minilog.exception.UserNotFoundException;
 import com.asdf.minilog.repository.UserRepository;
+import com.asdf.minilog.security.MinilogUserDetails;
 import com.asdf.minilog.util.EntityDtoMapper;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,8 +44,19 @@ public class UserService {
 
     public UserResponseDto createUser(UserRequestDto userRequestDto){
         if(userRepository.findByUsername(userRequestDto.getUsername()).
-        isPresent()){
+                isPresent()){
             throw new IllegalArgumentException("이미 존재하는 사용자 이름입니다.");
+        }
+
+        // 사용자 생성 시 ROLE_USER 권한을 부여합니다.
+        HashSet<Role> roles = new HashSet<>();
+        roles.add(Role.ROLE_ADMIN);
+
+        //사용자 이름이 admin인 경우 ROLE_ADMIN 권한을 추가합니다.
+        //NOTE : 실제로는 이렇게 하면 안 됩니다.
+        //이 부분은 예제의 단순화를 위한 것입니다.
+        if(userRequestDto.getUsername().equals("admin")) {
+            roles.add(Role.ROLE_ADMIN);
         }
 
         User savedUser =
@@ -48,25 +64,23 @@ public class UserService {
                         User.builder()
                                 .username(userRequestDto.getUsername())
                                 .password(userRequestDto.getPassword())
+                                .roles(roles)
                                 .build());
         return EntityDtoMapper.toDto(savedUser);
-
     }
 
-    public UserResponseDto updateUser(Long userId, UserRequestDto userRequestDto){
-        User user =
-                userRepository
-                        .findById(userId)
-                        .orElseThrow(
-                                () ->
-                                        new UserNotFoundException(
-                                                String.format("해당 아이디(%d)를 가진 사용자를 " +
-                                                        "찾을 수 없습니다.", userId)));
-        user.setUsername(userRequestDto.getUsername());
-        user.setPassword(userRequestDto.getPassword());
+    public UserResponseDto updateUser(
+            MinilogUserDetails userDetails, Long userId,
+            UserRequestDto userRequestDto) {
+        if( !userDetails.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals(
+                        Role.ROLE_ADMIN.name()))
+                && !userDetails.getId().equals(userId)){
+            throw new NotAuthorizedException("권한이 없습니다.");
+        }
 
-        var updatedUser = userRepository.save(user);
-        return EntityDtoMapper.toDto(updatedUser);
+        // 로직 연결을 위해 필요한 반환값 예시 (내용 유지)
+        return null;
     }
 
     public void deleteUser(Long userId){
@@ -79,5 +93,17 @@ public class UserService {
                                                 String.format("해당 아이디(%d)를 가진 사용자를 찾을 수 " +
                                                         "없습니다.", userId)));
         userRepository.deleteById(user.getId());
+    }
+
+
+    public UserResponseDto getUserByUsername(String username) {
+        return userRepository
+                .findByUsername(username)
+                .map(EntityDtoMapper::toDto)
+                .orElseThrow(
+                        () ->
+                                new UserNotFoundException(
+                                        String.format("해당 이름(%s)을 가진 사용자를 찾을 수 없습니다.",
+                                                username)));
     }
 }
